@@ -20,6 +20,7 @@
       <h1>Revvo Plataforma</h1>
       <nav class="nav" aria-label="Principal">
         <a href="#cursos">Cursos</a>
+        <a href="/admin/manage.php">Admin</a>
       </nav>
     </div>
   </header>
@@ -34,6 +35,16 @@
     </section>
   </main>
 
+  <?php
+  require_once __DIR__ . '/../inc/db.php';
+  $pdo = db();
+  $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+  $cursos = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+  ?>
+  <script>
+    window.__SLIDES__ = <?= json_encode($slides, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+    window.__CURSOS__ = <?= json_encode($cursos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+  </script>
   <script src="/assets/js/main.js" defer></script>
 </body>
 </html>
