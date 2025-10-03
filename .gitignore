@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Sass cache
+.sass-cache/
+
+# Compiled assets (optional, keep if you want to commit builds)
+# assets/css/*.map
+
+# SQLite database files (generated at runtime)
+data/*.sqlite
+
+# Env files
+.env
+
+# Editor folders
+.vscode/
+.idea/
