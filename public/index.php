@@ -1,50 +1,113 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_name'])) {
+  header('Location: /login.php');
+  exit;
+}
+?>
 <!doctype html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Revvo - Cursos</title>
+  <title>LEO - Cursos</title>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/modal.css">
 </head>
 <body>
-  <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-desc">
-    <div class="modal__dialog">
-      <h2 id="modal-title">Bem-vindo!</h2>
-      <p id="modal-desc">Este modal aparece apenas no primeiro acesso.</p>
-      <button id="modal-close" class="btn" aria-label="Fechar">Fechar</button>
-    </div>
-  </div>
+  <?php require_once __DIR__ . '/../inc/views/modal.php'; ?>
+  <?php require_once __DIR__ . '/../inc/views/courses-modal.php'; ?>
+  <?php require_once __DIR__ . '/../inc/views/course-detail-modal.php'; ?>
 
-  <header class="header">
-    <div class="container">
-      <h1>Revvo Plataforma</h1>
-      <nav class="nav" aria-label="Principal">
-        <a href="#cursos">Cursos</a>
-        <a href="/admin/manage.php">Admin</a>
-      </nav>
-    </div>
-  </header>
+  <?php require_once __DIR__ . '/../inc/views/header.php'; ?>
 
   <main class="container">
-    <section aria-label="Slideshow">
-      <div class="slideshow" id="slideshow" tabindex="0" aria-live="polite"></div>
-    </section>
+    <?php
+    $db_error = null;
+    $slides = [];
+    $cursos = [];
+    try {
+      require_once __DIR__ . '/../inc/db.php';
+      if (extension_loaded('pdo_sqlite')) {
+        $pdo = db();
+        $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+        $cursos = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+      } else {
+        $db_error = 'SQLite (pdo_sqlite) não está habilitado. Renderizando com dados vazios.';
+      }
+    } catch (Throwable $e) {
+      $db_error = 'Erro ao carregar dados: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
 
-    <section id="cursos" aria-label="Lista de cursos">
-      <div class="grid" id="courses-grid"></div>
-    </section>
+    // Fallback para conteúdo estático se nenhum dado for retornado
+    if (empty($slides)) {
+      $slides = [
+        [
+          'titulo' => 'LOREM IPSUM',
+          'descricao' => 'Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&h=600&fit=crop'
+        ],
+        [
+          'titulo' => 'LOREM IPSUM',
+          'descricao' => 'Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&h=600&fit=crop'
+        ],
+        [
+          'titulo' => 'LOREM IPSUM',
+          'descricao' => 'Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1600&h=600&fit=crop'
+        ],
+      ];
+    }
+
+    if (empty($cursos)) {
+      $cursos = [
+        [
+          'titulo' => 'PELLENTESQUE MALESUADA',
+          'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'novo' => false
+        ],
+        [
+          'titulo' => 'PELLENTESQUE MALESUADA',
+          'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'novo' => true
+        ],
+        [
+          'titulo' => 'PELLENTESQUE MALESUADA',
+          'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
+          'link' => '#',
+          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'novo' => false
+        ],
+      ];
+    }
+    ?>
+
+    <?php if ($db_error): ?>
+      <div class="alert" role="alert" style="margin:1rem 0;padding:0.75rem;border:1px solid #e1a; background:#fee; color:#900;">
+        <?= $db_error ?>
+      </div>
+    <?php endif; ?>
+
+    <?php require_once __DIR__ . '/../inc/views/hero.php'; ?>
+
+    <?php require_once __DIR__ . '/../inc/views/courses.php'; ?>
   </main>
 
-  <?php
-  require_once __DIR__ . '/../inc/db.php';
-  $pdo = db();
-  $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
-  $cursos = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
-  ?>
+  <?php require_once __DIR__ . '/../inc/views/footer.php'; ?>
+
   <script>
     window.__SLIDES__ = <?= json_encode($slides, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
     window.__CURSOS__ = <?= json_encode($cursos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
   </script>
   <script src="/assets/js/main.js" defer></script>
+  <script src="/assets/js/modal.js" defer></script>
 </body>
 </html>

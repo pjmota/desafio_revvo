@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEO - Plataforma de Cursos</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__container">
+            <div class="header__logo">
+                <span class="header__logo-text">LEO</span>
+            </div>
+            
+            <div class="header__search">
+                <input type="text" class="header__search-input" placeholder="Pesquisar cursos...">
+                <button class="header__search-btn">
+                    <svg class="header__search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="header__user">
+                <img src="https://i.pravatar.cc/150?img=12" alt="Avatar" class="header__user-avatar">
+                <div class="header__user-info">
+                    <span class="header__user-greeting">Seja bem-vindo</span>
+                    <span class="header__user-name">John Doe</span>
+                </div>
+                <button class="header__user-dropdown">
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="currentColor">
+                        <path d="M1 1l5 5 5-5"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Carousel -->
+    <section class="hero">
+        <div class="hero__carousel">
+            <div class="hero__slides">
+                <div class="hero__slide hero__slide--active">
+                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&h=600&fit=crop" alt="Slide 1" class="hero__slide-image">
+                    <div class="hero__slide-overlay"></div>
+                    <div class="hero__slide-content">
+                        <h1 class="hero__slide-title">LOREM IPSUM</h1>
+                        <p class="hero__slide-text">Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
+                        <button class="hero__slide-btn">VER CURSO</button>
+                    </div>
+                </div>
+                
+                <div class="hero__slide">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&h=600&fit=crop" alt="Slide 2" class="hero__slide-image">
+                    <div class="hero__slide-overlay"></div>
+                    <div class="hero__slide-content">
+                        <h1 class="hero__slide-title">LOREM IPSUM</h1>
+                        <p class="hero__slide-text">Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
+                        <button class="hero__slide-btn">VER CURSO</button>
+                    </div>
+                </div>
+                
+                <div class="hero__slide">
+                    <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1600&h=600&fit=crop" alt="Slide 3" class="hero__slide-image">
+                    <div class="hero__slide-overlay"></div>
+                    <div class="hero__slide-content">
+                        <h1 class="hero__slide-title">LOREM IPSUM</h1>
+                        <p class="hero__slide-text">Aenean lacinia bibendum nulla sed consectetur. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
+                        <button class="hero__slide-btn">VER CURSO</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="hero__arrow hero__arrow--prev">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+            
+            <button class="hero__arrow hero__arrow--next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+            
+            <div class="hero__indicators">
+                <button class="hero__indicator hero__indicator--active" data-slide="0"></button>
+                <button class="hero__indicator" data-slide="1"></button>
+                <button class="hero__indicator" data-slide="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="courses">
+        <div class="courses__container">
+            <h2 class="courses__title">MEUS CURSOS</h2>
+            
+            <div class="courses__grid">
+                <!-- Course Card 1 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 2 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <span class="course-card__badge">NOVO</span>
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 3 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 4 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 5 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 6 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Course Card 7 -->
+                <article class="course-card">
+                    <div class="course-card__image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop" alt="Curso" class="course-card__image">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">PELLENTESQUE MALESUADA</h3>
+                        <p class="course-card__description">Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.</p>
+                        <button class="course-card__btn">VER CURSO</button>
+                    </div>
+                </article>
+                
+                <!-- Add Course Card -->
+                <article class="course-card course-card--add">
+                    <div class="course-card__add-content">
+                        <img src="assets/uploads/icons/add-course.svg" alt="Adicionar Curso" class="course-card__add-icon">
+                        <span class="course-card__add-text">ADICIONAR<br>CURSO</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer__container">
+            <div class="footer__left">
+                <div class="footer__logo">
+                    <span class="footer__logo-text">LEO</span>
+                </div>
+                <p class="footer__description">Maecenas faucibus mollis interdum. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
+            </div>
+            
+            <div class="footer__center">
+                <h3 class="footer__heading">// CONTATO</h3>
+                <p class="footer__contact-phone">(21) 98765-3434</p>
+                <p class="footer__contact-email">contato@leolearning.com</p>
+            </div>
+            
+            <div class="footer__right">
+                <h3 class="footer__heading">// REDES SOCIAIS</h3>
+                <div class="footer__social">
+                    <a href="#" class="footer__social-link" aria-label="Twitter">
+                        <img src="assets/uploads/icons/twitter.svg" alt="Twitter" class="footer__social-icon">
+                    </a>
+                    <a href="#" class="footer__social-link" aria-label="YouTube">
+                        <img src="assets/uploads/icons/youtube.svg" alt="YouTube" class="footer__social-icon">
+                    </a>
+                    <a href="#" class="footer__social-link" aria-label="Pinterest">
+                        <img src="assets/uploads/icons/pinterest.svg" alt="Pinterest" class="footer__social-icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer__bottom">
+            <p class="footer__copyright">Copyright 2017 - All right reserved</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="courseModal">
+        <div class="modal__overlay"></div>
+        
+        <div class="modal__container">
+            <div class="modal__content">
+                <!-- Close Button -->
+                <button class="modal__close" aria-label="Fechar modal">
+                    <svg class="modal__close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <!-- Modal Image -->
+                <div class="modal__image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop" alt="Curso" class="modal__image">
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal__body">
+                    <h2 class="modal__title">EGESTAS TORTOR VULPUTATE</h2>
+                    <p class="modal__description">Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Donec ullamcorper nulla non metus auctor fringilla. Donec sed odio dui. Cras</p>
+                    <button class="modal__btn">INSCREVA-SE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="modal.js"></script>
+</body>
+</html>
