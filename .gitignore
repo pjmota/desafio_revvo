@@ -15,9 +15,11 @@ Thumbs.db
 
 # Compiled assets (optional, keep if you want to commit builds)
 # assets/css/*.map
+assets/css/*.map
 
 # SQLite database files (generated at runtime)
 data/*.sqlite
+data/jwt_secret.txt
 
 # Env files
 .env
