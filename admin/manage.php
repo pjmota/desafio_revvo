@@ -104,7 +104,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $status = 'err';
         }
     }
-    header('Location: /admin/manage.php?status=' . urlencode($status ?? 'ok'));
+    $status = $status ?? 'ok';
+    $tab = $_POST['current_tab'] ?? '';
+    $qs = 'status=' . urlencode($status);
+    if ($tab !== '') { $qs .= '&tab=' . urlencode($tab); }
+    header('Location: /admin/manage.php?' . $qs);
     exit;
 }
 
@@ -145,6 +149,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
   <section id="tab-cursos" class="tab-panel active" role="tabpanel" aria-labelledby="tab-cursos-btn">
     <h2>Cursos</h2>
     <form method="post" enctype="multipart/form-data" class="form-inline">
+      <input type="hidden" name="current_tab" value="tab-cursos">
       <input type="hidden" name="action" value="create_course">
       <input type="text" name="titulo" placeholder="Título" required>
       <textarea name="descricao" placeholder="Descrição" rows="3" required></textarea>
@@ -174,6 +179,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
               <details>
                 <summary>Editar</summary>
                 <form method="post" enctype="multipart/form-data" class="form-inline">
+                  <input type="hidden" name="current_tab" value="tab-cursos">
                   <input type="hidden" name="action" value="update_course">
                   <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
                   <input type="text" name="titulo" placeholder="Título" value="<?= sanitize($c['titulo']) ?>" required>
@@ -194,6 +200,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
     <h2>Slides</h2>
     <?php if (count($slides) < 5): ?>
     <form method="post" enctype="multipart/form-data" class="form-inline">
+      <input type="hidden" name="current_tab" value="tab-slides">
       <input type="hidden" name="action" value="create_slide">
       <input type="file" name="imagem" accept="image/*" required>
       <input type="text" name="titulo" placeholder="Título" required>
@@ -221,6 +228,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
             <details>
               <summary>Editar</summary>
               <form method="post" enctype="multipart/form-data" class="form-inline">
+                <input type="hidden" name="current_tab" value="tab-slides">
                 <input type="hidden" name="action" value="update_slide">
                 <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
                 <input type="file" name="imagem" accept="image/*">
@@ -240,6 +248,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
   <section id="tab-usuarios" class="tab-panel" role="tabpanel" aria-labelledby="tab-usuarios-btn" hidden>
     <h2>Usuários</h2>
     <form method="post" enctype="multipart/form-data" class="form-inline">
+       <input type="hidden" name="current_tab" value="tab-usuarios">
        <input type="hidden" name="action" value="create_user">
        <input type="text" name="nome" placeholder="Nome" required>
        <input type="email" name="email" placeholder="Email" required>
@@ -264,6 +273,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
               <details>
                 <summary>Editar</summary>
                 <form method="post" class="form-inline" enctype="multipart/form-data">
+                  <input type="hidden" name="current_tab" value="tab-usuarios">
                   <input type="hidden" name="action" value="update_user">
                   <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                   <input type="text" name="nome" placeholder="Nome" value="<?= sanitize($u['nome']) ?>" required>
@@ -294,9 +304,16 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
       });
     }));
 
-    // Abrir popup de alerta quando houver status=admin_guard
     const params = new URLSearchParams(window.location.search);
-    if (params.get('status') === 'admin_guard') {
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      const targetBtn = tabBtns.find(btn => btn.getAttribute('aria-controls') === tabParam);
+      if (targetBtn) targetBtn.click();
+    }
+
+    // Abrir popup de alerta quando houver status=admin_guard
+    const statusParam = params.get('status');
+    if (statusParam === 'admin_guard') {
       // Reutilizar HTML do modal com mensagem simples
       const alertModal = document.createElement('div');
       alertModal.className = 'modal';
