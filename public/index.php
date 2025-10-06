@@ -33,7 +33,7 @@ if (!$user) {
       require_once __DIR__ . '/../inc/db.php';
       if (extension_loaded('pdo_sqlite')) {
         $pdo = db();
-        $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC LIMIT 5')->fetchAll(PDO::FETCH_ASSOC);
+        $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em ASC LIMIT 5')->fetchAll(PDO::FETCH_ASSOC);
         $cursosDb = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
       } else {
         $db_error = 'SQLite (pdo_sqlite) não está habilitado. Renderizando com dados vazios.';
