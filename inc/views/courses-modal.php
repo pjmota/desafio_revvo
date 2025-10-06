@@ -11,7 +11,7 @@
     <div class="modal__content">
       <div class="modal__body courses-modal__body">
         <h2 class="modal__title courses-modal__title">Adicionar curso</h2>
-        <p class="modal__description courses-modal__description">Selecione um curso para adicionar à grade. Cursos já exibidos foram ocultados.</p>
+        <p class="modal__description courses-modal__description">Selecione um curso para adicionar à grade.</p>
         <div id="courses-modal-list" class="courses-modal__list" role="list"></div>
       </div>
     </div>
