@@ -48,7 +48,11 @@
         function closeModal() {
             modal.classList.remove('modal--active');
             document.body.classList.remove('modal-open');
-            // Marcar como visto para não abrir automaticamente novamente
+            // Persistir no backend para não abrir mais para este usuário
+            try {
+                fetch('/api/user/main-modal/close', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }).catch(function(){});
+            } catch (_e) {}
+            // Fallback local
             try { localStorage.setItem('modal_shown', '1'); } catch (e) {}
         }
         
@@ -105,13 +109,23 @@
             toggle: toggleModal
         };
         
-        // Abrir automaticamente se não estiver marcado como '1'
-        var shown = null;
-        try { shown = localStorage.getItem('modal_shown'); } catch (e) {}
-        // Abre automaticamente apenas se nunca foi marcado como mostrado
-        if (shown !== '0') {
-            openModal();
-        }
+        // Checar estado do modal via API por usuário logado, com fallback localStorage
+        (function checkModalStateAndOpen(){
+            fetch('/api/user/modal-state', { credentials: 'same-origin' })
+                .then(function(res){ return res.ok ? res.json() : Promise.reject(new Error('http '+res.status)); })
+                .then(function(data){
+                    if (data && data.show_main_modal === true) {
+                        openModal();
+                    }
+                })
+                .catch(function(){
+                    var shown = null;
+                    try { shown = localStorage.getItem('modal_shown'); } catch (e) {}
+                    if (shown !== '1') {
+                        openModal();
+                    }
+                });
+        })();
         
         // Log para debug (pode ser removido em produção)
         console.log('Modal inicializado. Use LEOModal.open() para abrir.');

@@ -1,6 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_name'])) {
+require_once __DIR__ . '/../inc/db.php';
+$user = current_user();
+if (!$user) {
   header('Location: /login.php');
   exit;
 }
@@ -25,13 +26,15 @@ if (!isset($_SESSION['user_name'])) {
     <?php
     $db_error = null;
     $slides = [];
+    $cursosDb = [];
     $cursos = [];
+    $isCursosFallback = true;
     try {
       require_once __DIR__ . '/../inc/db.php';
       if (extension_loaded('pdo_sqlite')) {
         $pdo = db();
-        $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
-        $cursos = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+        $slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC LIMIT 5')->fetchAll(PDO::FETCH_ASSOC);
+        $cursosDb = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
       } else {
         $db_error = 'SQLite (pdo_sqlite) não está habilitado. Renderizando com dados vazios.';
       }
@@ -64,26 +67,27 @@ if (!isset($_SESSION['user_name'])) {
     }
 
     if (empty($cursos)) {
+      $isCursosFallback = true;
       $cursos = [
         [
           'titulo' => 'PELLENTESQUE MALESUADA',
           'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
           'link' => '#',
-          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'imagem' => '/assets/uploads/cards.jpg',
           'novo' => false
         ],
         [
           'titulo' => 'PELLENTESQUE MALESUADA',
           'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
           'link' => '#',
-          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'imagem' => '/assets/uploads/cards.jpg',
           'novo' => true
         ],
         [
           'titulo' => 'PELLENTESQUE MALESUADA',
           'descricao' => 'Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue.',
           'link' => '#',
-          'imagem' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop',
+          'imagem' => '/assets/uploads/cards.jpg',
           'novo' => false
         ],
       ];
@@ -105,7 +109,9 @@ if (!isset($_SESSION['user_name'])) {
 
   <script>
     window.__SLIDES__ = <?= json_encode($slides, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
-    window.__CURSOS__ = <?= json_encode($cursos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+    window.__CURSOS_DB__ = <?= json_encode($cursosDb, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+    window.__CURSOS_FALLBACK__ = <?= json_encode($cursos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+    window.__CURSOS_IS_FALLBACK__ = <?= $isCursosFallback ? 'true' : 'false' ?>;
   </script>
   <script src="/assets/js/main.js" defer></script>
   <script src="/assets/js/modal.js" defer></script>
