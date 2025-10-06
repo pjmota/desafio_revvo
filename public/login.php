@@ -1,19 +1,24 @@
 <?php
-session_start();
+require_once __DIR__ . '/../inc/db.php';
 
-// Tratamento do POST de login
 $login_error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = $_POST['email'] ?? '';
   $senha = $_POST['senha'] ?? '';
-  if ($email === 'teste@teste.com' && $senha === '123456') {
-    $_SESSION['user_name'] = 'Teste';
-    session_regenerate_id(true);
-    session_write_close();
-    header('Location: /index.php');
-    exit;
-  } else {
-    $login_error = 'Credenciais inválidas. Use email teste@teste.com e senha 123456';
+  try {
+    $pdo = db();
+    $stmt = $pdo->prepare('SELECT id, nome, email, senha_hash FROM usuarios WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user && password_verify($senha, (string)$user['senha_hash'])) {
+      issue_tokens(['id' => (int)$user['id'], 'nome' => (string)$user['nome'], 'email' => (string)$user['email']], 900, 3600);
+      header('Location: /index.php');
+      exit;
+    } else {
+      $login_error = 'Credenciais inválidas. Use email teste@teste.com e senha 123456';
+    }
+  } catch (Throwable $e) {
+    $login_error = 'Erro de login: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
   }
 }
 ?>
