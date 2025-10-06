@@ -147,7 +147,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
     <form method="post" enctype="multipart/form-data" class="form-inline">
       <input type="hidden" name="action" value="create_course">
       <input type="text" name="titulo" placeholder="Título" required>
-      <input type="text" name="descricao" placeholder="Descrição" required>
+      <textarea name="descricao" placeholder="Descrição" rows="3" required></textarea>
       <input type="file" name="imagem" accept="image/*" required>
       <button class="btn" type="submit">Adicionar</button>
     </form>
@@ -177,7 +177,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
                   <input type="hidden" name="action" value="update_course">
                   <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
                   <input type="text" name="titulo" placeholder="Título" value="<?= sanitize($c['titulo']) ?>" required>
-                  <input type="text" name="descricao" placeholder="Descrição" value="<?= sanitize($c['descricao']) ?>" required>
+                  <textarea name="descricao" placeholder="Descrição" rows="3" required><?= sanitize($c['descricao']) ?></textarea>
                   <input type="file" name="imagem" accept="image/*">
                   <button class="btn" type="submit">Salvar</button>
                 </form>
@@ -197,7 +197,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
       <input type="hidden" name="action" value="create_slide">
       <input type="file" name="imagem" accept="image/*" required>
       <input type="text" name="titulo" placeholder="Título" required>
-      <input type="text" name="descricao" placeholder="Descrição" required>
+      <textarea name="descricao" placeholder="Descrição" rows="3" required></textarea>
       <input type="url" name="link" placeholder="Link do botão">
       <button class="btn" type="submit">Adicionar Slide</button>
     </form>
@@ -225,7 +225,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
                 <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
                 <input type="file" name="imagem" accept="image/*">
                 <input type="text" name="titulo" placeholder="Título" value="<?= sanitize($s['titulo']) ?>" required>
-                <input type="text" name="descricao" placeholder="Descrição" value="<?= sanitize($s['descricao']) ?>" required>
+                <textarea name="descricao" placeholder="Descrição" rows="3" required><?= sanitize($s['descricao']) ?></textarea>
                 <input type="url" name="link" placeholder="Link do botão" value="<?= sanitize($s['link']) ?>">
                 <button class="btn" type="submit">Salvar</button>
               </form>
