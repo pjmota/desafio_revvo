@@ -788,3 +788,46 @@ button {
         }
     }
 }
+
+// Layout específico entre iPhone SE (375px) e iPad Mini (768px)
+@media (min-width: 375px) and (max-width: $breakpoint-tablet) {
+    .header {
+        &__container {
+            flex-wrap: wrap;
+            justify-content: space-between; // manter logo + avatar + boas-vindas na primeira linha
+        }
+        &__user {
+            order: 1; // garantir que o bloco de usuário fique na primeira linha
+        }
+        &__search {
+            order: 3; // mover busca para a segunda linha
+            flex-basis: 100%;
+            max-width: 100%;
+            margin-top: 0.75rem;
+        }
+        &__user-info {
+            display: flex; // reexibir saudação/boas-vindas neste intervalo
+        }
+    }
+}
+
+@media (min-width: $breakpoint-desktop) {
+    .header {
+        &__logo {
+            margin-left: -1.2rem; // ajuste solicitado para desktop
+        }
+    }
+}
+
+@media (min-width: $breakpoint-desktop) {
+    .footer {
+        &__container {
+            padding: 3rem 0rem; // ajuste solicitado para desktop
+        }
+    }
+    .hero {
+        &__slide-content {
+            left: 5.6%; // ajuste solicitado para desktop
+        }
+    }
+}

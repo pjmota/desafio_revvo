@@ -6,67 +6,108 @@
 (function() {
     'use strict';
     
-    // Mock de cursos e estado dos cursos visíveis
-    var COURSES_MOCK = [
-        { id: 1, nome: 'Desenvolvimento Web Full Stack', descricao: 'Curso abrangente que ensina a criar aplicações web completas, cobrindo front-end (HTML, CSS, JavaScript) e back-end (Node.js, bancos de dados).' },
-        { id: 2, nome: 'Ciência de Dados', descricao: 'Focado em análise e interpretação de dados, utilizando Python, estatísticas e aprendizado de máquina para extrair insights de grandes conjuntos de dados.' },
-        { id: 3, nome: 'Desenvolvimento Mobile', descricao: 'Ensina a criar aplicativos para iOS e Android usando frameworks como Flutter ou React Native, com ênfase em interfaces responsivas.' },
-        { id: 4, nome: 'Inteligência Artificial', descricao: 'Explora conceitos de IA, incluindo redes neurais, aprendizado profundo e processamento de linguagem natural, com projetos práticos.' },
-        { id: 5, nome: 'Segurança Cibernética', descricao: 'Curso voltado para proteção de sistemas e redes, abordando técnicas de defesa contra ataques, criptografia e testes de penetração.' },
-        { id: 6, nome: 'DevOps e Cloud Computing', descricao: 'Aborda práticas de DevOps, integração contínua, entrega contínua e gerenciamento de infraestrutura em nuvens como AWS, Azure e Google Cloud.' },
-        { id: 7, nome: 'Desenvolvimento de Jogos', descricao: 'Ensina a criar jogos 2D e 3D utilizando engines como Unity ou Unreal Engine, com foco em programação, design e narrativa interativa.' },
-        { id: 8, nome: 'Internet das Coisas (IoT)', descricao: 'Explora o desenvolvimento de dispositivos conectados, utilizando sensores, microcontroladores e plataformas como Arduino e Raspberry Pi.' },
-        { id: 9, nome: 'Engenharia de Software', descricao: 'Focado em metodologias ágeis, design de sistemas, testes de software e gerenciamento de projetos para construir aplicações robustas.' },
-        { id: 10, nome: 'Big Data e Hadoop', descricao: 'Ensina a processar grandes volumes de dados utilizando frameworks como Hadoop e Spark, com foco em análise escalável.' },
-        { id: 11, nome: 'Blockchain e Criptomoedas', descricao: 'Aborda fundamentos de blockchain, desenvolvimento de smart contracts e aplicações descentralizadas usando Ethereum e Solidity.' },
-        { id: 12, nome: 'UX/UI Design', descricao: 'Ensina a criar interfaces de usuário intuitivas e experiências digitais envolventes, utilizando ferramentas como Figma e Adobe XD.' }
-    ];
+    // Carregar cursos do banco (sem fallback automático), apenas para adicionar via botão
+    var COURSES_DB = Array.isArray(window.__CURSOS_DB__) ? window.__CURSOS_DB__.map(function(c, idx) {
+        return {
+            id: (typeof c.id === 'number' ? c.id : (idx + 1)),
+            nome: c.titulo || '',
+            descricao: c.descricao || '',
+            imagem: c.imagem || '',
+            criado_em: c.criado_em || ''
+        };
+    }) : [];
 
-    // IDs dos cursos visíveis em tela (inicialmente 7 primeiros pelo ID)
-    var visibleCourseIds = COURSES_MOCK
+    var COURSES_DB = Array.isArray(window.__CURSOS_DB__) ? window.__CURSOS_DB__.map(function(c, idx) {
+        return {
+            id: (typeof c.id === 'number' ? c.id : (idx + 1)),
+            nome: c.titulo || '',
+            descricao: c.descricao || '',
+            imagem: c.imagem || '',
+            criado_em: c.criado_em || ''
+        };
+    }) : [];
+
+    // IDs dos cursos visíveis em tela: se fallback ativo, começar vazio; senão, preencher com até 7 cursos do banco
+    var isFallbackFlag = !!window.__CURSOS_IS_FALLBACK__;
+    var setupDone = false;
+    try { setupDone = localStorage.getItem('courses_setup_done') === '1'; } catch (_) {}
+    var isFallback = isFallbackFlag && !setupDone;
+    var visibleCourseIds = (isFallback ? [] : COURSES_DB
         .slice()
         .sort(function(a, b) { return a.id - b.id; })
         .slice(0, 7)
-        .map(function(c) { return c.id; });
+        .map(function(c) { return c.id; }));
 
     // IDs marcados como recém-adicionados (para exibir badge "NOVO")
     var newlyAddedCourseIds = [];
 
-
-    function getCourseById(id) {
-        for (var i = 0; i < COURSES_MOCK.length; i++) {
-            if (COURSES_MOCK[i].id === id) return COURSES_MOCK[i];
+    function getCourseById_DB(id) {
+        for (var i = 0; i < COURSES_DB.length; i++) {
+            if (COURSES_DB[i].id === id) return COURSES_DB[i];
         }
         return null;
     }
-
+    function isCourseNew(course) {
+        var dt = course && course.criado_em;
+        if (!dt || typeof dt !== 'string') return false;
+        try {
+            var iso = dt.replace(' ', 'T');
+            var created = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
+            if (isNaN(created.getTime())) {
+                created = new Date(iso);
+            }
+            if (isNaN(created.getTime())) return false;
+            var diffMs = Date.now() - created.getTime();
+            return diffMs <= 24 * 60 * 60 * 1000;
+        } catch (e) {
+            return false;
+        }
+    }
     function openAddCourseModal() {
         var modal = document.getElementById('coursesModal');
         if (!modal) return;
         var overlay = modal.querySelector('.modal__overlay');
         var closeBtn = modal.querySelector('.modal__close');
         var listEl = document.getElementById('courses-modal-list');
+        var descEl = modal.querySelector('.courses-modal__description');
         if (listEl) {
             listEl.innerHTML = '';
-            var available = COURSES_MOCK.filter(function(c) { return visibleCourseIds.indexOf(c.id) === -1; });
+            var available = COURSES_DB.filter(function(c) { return visibleCourseIds.indexOf(c.id) === -1; });
             if (available.length === 0) {
+                if (descEl) { descEl.style.display = 'none'; }
                 var emptyMsg = document.createElement('p');
                 emptyMsg.className = 'courses-modal__description';
                 emptyMsg.textContent = 'Nenhum curso disponível para adicionar.';
                 listEl.appendChild(emptyMsg);
             } else {
+                if (descEl) { descEl.style.display = ''; }
                 available.sort(function(a, b) { return a.id - b.id; }).forEach(function(c) {
                     var btn = document.createElement('button');
                     btn.className = 'courses-modal__btn';
                     btn.type = 'button';
                     btn.textContent = c.nome + ' (ID ' + c.id + ')';
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', async function() {
                         if (visibleCourseIds.indexOf(c.id) === -1) {
                             visibleCourseIds.push(c.id);
                             // marcar como recém-adicionado para badge
                             if (newlyAddedCourseIds.indexOf(c.id) === -1) {
                                 newlyAddedCourseIds.push(c.id);
                             }
+                            // Persistir no backend por usuário
+                            try {
+                                await fetch('/api/homepage-courses', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                                    credentials: 'same-origin',
+                                    body: JSON.stringify({ course_id: c.id })
+                                });
+                            } catch (_) {}
+                            // Garantir persistência local e sair de fallback
+                            try {
+                                localStorage.setItem('courses_setup_done', '1');
+                                localStorage.setItem('visible_course_ids', JSON.stringify(visibleCourseIds.slice().sort(function(a,b){return a-b;})));
+                            } catch (_) {}
+                            isFallback = false;
                             renderCourses();
                         }
                         closeAddCourseModal();
@@ -96,9 +137,38 @@
         init();
     }
     
-    function init() {
+    async function init() {
         initModal();
         renderHero();
+        // Restaurar localStorage como base
+        try {
+            var saved = localStorage.getItem('visible_course_ids');
+            if (saved) {
+                var arr = JSON.parse(saved);
+                if (Array.isArray(arr)) {
+                    visibleCourseIds = arr.filter(function(x){ return typeof x === 'number'; });
+                }
+            }
+        } catch (_) {}
+        // Buscar persistência por usuário no backend e sobrepor se existir
+        try {
+            var resp = await fetch('/api/homepage-courses', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+            if (resp && resp.ok) {
+                var data = await resp.json();
+                if (data && Array.isArray(data.course_ids) && data.course_ids.length > 0) {
+                    visibleCourseIds = data.course_ids.map(function(x){ return parseInt(x, 10); }).filter(function(x){ return !isNaN(x); });
+                    try {
+                        localStorage.setItem('courses_setup_done', '1');
+                        localStorage.setItem('visible_course_ids', JSON.stringify(visibleCourseIds.slice().sort(function(a,b){return a-b;})));
+                    } catch (_) {}
+                    isFallback = false;
+                }
+            }
+        } catch (_) {}
         renderCourses();
         initCarousel();
         initUserMenu();
@@ -317,7 +387,7 @@
     }
     
     function renderHero() {
-        var slidesData = Array.isArray(window.__SLIDES__) ? window.__SLIDES__ : [];
+        var slidesData = Array.isArray(window.__SLIDES__) ? window.__SLIDES__.slice(0, 5) : [];
         var slidesEl = document.getElementById('hero-slides');
         var indicatorsEl = document.getElementById('hero-indicators');
         if (!slidesEl || !indicatorsEl) return;
@@ -379,12 +449,61 @@
         if (!gridEl) return;
         gridEl.innerHTML = '';
 
+        if (isFallback && visibleCourseIds.length === 0) {
+            var fallback = Array.isArray(window.__CURSOS_FALLBACK__) ? window.__CURSOS_FALLBACK__ : [];
+            // Renderizar os 3 cards padrão (feedback)
+            fallback.slice(0, 3).forEach(function(c, idx){
+                var card = document.createElement('article');
+                card.className = 'course-card';
+                var imageWrapper = document.createElement('div');
+                imageWrapper.className = 'course-card__image-wrapper';
+                var img = document.createElement('img');
+                img.src = c.imagem || '/assets/uploads/cards.jpg';
+                img.alt = (c.titulo || 'Curso');
+                img.className = 'course-card__image';
+                imageWrapper.appendChild(img);
+                // Badge "NOVO" fixo no segundo card
+                if (idx === 1) {
+                    var badge = document.createElement('span');
+                    badge.className = 'course-card__badge';
+                    badge.textContent = 'NOVO';
+                    imageWrapper.appendChild(badge);
+                }
+                card.appendChild(imageWrapper);
+                var content = document.createElement('div');
+                content.className = 'course-card__content';
+                content.innerHTML = (
+                    '<h3 class="course-card__title">' + (c.titulo || '') + '</h3>' +
+                    '<p class="course-card__description">' + (c.descricao || '') + '</p>' +
+                    '<a href="#" class="course-card__btn">VER CURSO</a>'
+                );
+                card.appendChild(content);
+                gridEl.appendChild(card);
+            });
+            // Card para adicionar novo curso
+            var addCardOnly = document.createElement('article');
+            addCardOnly.className = 'course-card course-card--add';
+            addCardOnly.innerHTML = (
+              '<div class="course-card__add-content">' +
+                '<svg class="course-card__add-icon" viewBox="0 0 24 24" aria-hidden="true">' +
+                  '<rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor"/>' +
+                  '<path d="M12 7v10M7 12h10" stroke="#000" stroke-width="2"/>' +
+                '</svg>' +
+                '<div class="course-card__add-text">Adicionar novo curso</div>' +
+              '</div>'
+            );
+            addCardOnly.addEventListener('click', function() {
+                openAddCourseModal();
+            });
+            gridEl.appendChild(addCardOnly);
+            return;
+        }
         // Renderizar cursos atualmente visíveis na ordem dos IDs
         visibleCourseIds
             .slice()
             .sort(function(a, b) { return a - b; })
             .forEach(function(id, idx) {
-                var c = getCourseById(id);
+                var c = getCourseById_DB(id);
                 if (!c) return;
 
                 var card = document.createElement('article');
@@ -393,14 +512,13 @@
                 var imageWrapper = document.createElement('div');
                 imageWrapper.className = 'course-card__image-wrapper';
                 var img = document.createElement('img');
-                img.src = '/assets/uploads/cards.jpg';
+                img.src = c.imagem || '/assets/uploads/cards.jpg';
                 img.alt = c.nome || 'Curso';
                 img.className = 'course-card__image';
                 imageWrapper.appendChild(img);
                 
-                // Badge "NOVO" fixo no segundo card e para cursos recém-adicionados
-                var shouldShowNewBadge = (idx === 1) || (newlyAddedCourseIds.indexOf(c.id) !== -1);
-                if (shouldShowNewBadge) {
+                // Badge "NOVO" baseado na data de criação: aparece até 24h após inserção
+                if (isCourseNew(c)) {
                     var badge = document.createElement('span');
                     badge.className = 'course-card__badge';
                     badge.textContent = 'NOVO';
@@ -469,5 +587,5 @@
         });
         gridEl.appendChild(addCard);
     }
-    
+
 })();
