@@ -11,9 +11,11 @@ class UploadService
      */
     public function upload(array $file): ?string
     {
-        // Carregar config do projeto
-        require_once __DIR__ . '/../../inc/config.php';
-        global $UPLOAD_DIR;
+        // Diretório de destino (independente de config global)
+        $uploadDir = __DIR__ . '/../../assets/uploads';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0775, true);
+        }
 
         if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
             return null;
@@ -62,7 +64,7 @@ class UploadService
 
         // Nome seguro
         $safe = 'img_' . str_replace('.', '', uniqid('', true)) . '.' . $ext;
-        $dest = $UPLOAD_DIR . '/' . $safe;
+        $dest = rtrim($uploadDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $safe;
         if (@move_uploaded_file($tmp, $dest)) {
             return '/assets/uploads/' . $safe;
         }

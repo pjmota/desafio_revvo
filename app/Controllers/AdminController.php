@@ -7,6 +7,7 @@ use App\Repositories\CourseRepository;
 use App\Repositories\SlideRepository;
 use App\Repositories\UserRepository;
 use App\Services\UploadService;
+use App\Services\CsrfService;
 
 class AdminController
 {
@@ -29,12 +30,24 @@ class AdminController
         $action = $_POST['action'] ?? '';
         $tab = $_POST['current_tab'] ?? '';
         $status = 'ok';
+        
+        // CSRF validation
+        $csrf = new CsrfService();
+        if (!$csrf->validate($_POST['csrf_token'] ?? null)) {
+            $status = 'csrf';
+            $qs = 'status=' . urlencode($status);
+            if ($tab !== '') { $qs .= '&tab=' . urlencode($tab); }
+            header('Location: /admin/manage.php?' . $qs);
+            exit;
+        }
+        
         try {
             if ($action === 'create_course') {
                 $imgPath = $this->uploader->upload($_FILES['imagem'] ?? []);
                 $titulo = trim($_POST['titulo'] ?? '');
                 $descricao = trim($_POST['descricao'] ?? '');
-                if ($imgPath && $titulo !== '' && $descricao !== '') {
+                if (strlen($titulo) > 255 || strlen($descricao) > 2000) { $status = 'err'; }
+                elseif ($imgPath && $titulo !== '' && $descricao !== '') {
                     $this->courses->create($titulo, $descricao, $imgPath);
                 } else {
                     $status = 'err';
@@ -44,7 +57,8 @@ class AdminController
                 $titulo = trim($_POST['titulo'] ?? '');
                 $descricao = trim($_POST['descricao'] ?? '');
                 $id = (int)($_POST['id'] ?? 0);
-                if ($id > 0 && $titulo !== '' && $descricao !== '') {
+                if (strlen($titulo) > 255 || strlen($descricao) > 2000) { $status = 'err'; }
+                elseif ($id > 0 && $titulo !== '' && $descricao !== '') {
                     $this->courses->update($id, $titulo, $descricao, $imgPath ?: null);
                 } else {
                     $status = 'err';
@@ -61,7 +75,9 @@ class AdminController
                 $titulo = trim($_POST['titulo'] ?? '');
                 $descricao = trim($_POST['descricao'] ?? '');
                 $link = trim($_POST['link'] ?? '#');
-                if ($imgPath && $titulo !== '' && $descricao !== '') {
+                $link = filter_var($link, FILTER_VALIDATE_URL) ? $link : '#';
+                if (strlen($titulo) > 255 || strlen($descricao) > 2000) { $status = 'err'; }
+                elseif ($imgPath && $titulo !== '' && $descricao !== '') {
                     $this->slides->create($imgPath, $titulo, $descricao, $link);
                 } else {
                     $status = 'err';
@@ -71,8 +87,10 @@ class AdminController
                 $titulo = trim($_POST['titulo'] ?? '');
                 $descricao = trim($_POST['descricao'] ?? '');
                 $link = trim($_POST['link'] ?? '#');
+                $link = filter_var($link, FILTER_VALIDATE_URL) ? $link : '#';
                 $id = (int)($_POST['id'] ?? 0);
-                if ($id > 0 && $titulo !== '' && $descricao !== '') {
+                if (strlen($titulo) > 255 || strlen($descricao) > 2000) { $status = 'err'; }
+                elseif ($id > 0 && $titulo !== '' && $descricao !== '') {
                     $this->slides->update($id, $titulo, $descricao, $link, $imgPath ?: null);
                 } else {
                     $status = 'err';
@@ -85,12 +103,13 @@ class AdminController
                     $status = 'err';
                 }
             } elseif ($action === 'create_user') {
-                $avatarPath = $this->uploader->upload($_FILES['avatar'] ?? []);
+                $avatarPath = $this->uploader->upload($_FILES['imagem'] ?? []);
                 $nome = trim($_POST['nome'] ?? '');
                 $email = trim($_POST['email'] ?? '');
                 $senha = (string)($_POST['senha'] ?? '');
                 $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
-                if ($nome !== '' && $email !== '' && $senha !== '') {
+                if (strlen($nome) > 255 || strlen($email) > 255) { $status = 'err'; }
+                elseif ($nome !== '' && $email !== '' && $senha !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $hash = password_hash($senha, PASSWORD_DEFAULT);
                     try {
                         $pdo = \db();
@@ -104,12 +123,13 @@ class AdminController
                     $status = 'err';
                 }
             } elseif ($action === 'update_user') {
-                $avatarPath = $this->uploader->upload($_FILES['avatar'] ?? []);
+                $avatarPath = $this->uploader->upload($_FILES['imagem'] ?? []);
                 $id = (int)($_POST['id'] ?? 0);
                 $nome = trim($_POST['nome'] ?? '');
                 $email = trim($_POST['email'] ?? '');
                 $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
-                if ($id > 0 && $nome !== '' && $email !== '') {
+                if (strlen($nome) > 255 || strlen($email) > 255) { $status = 'err'; }
+                elseif ($id > 0 && $nome !== '' && $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     try {
                         $pdo = \db();
                         $curStmt = $pdo->prepare('SELECT is_admin FROM usuarios WHERE id=?');

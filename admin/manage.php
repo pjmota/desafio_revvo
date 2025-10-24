@@ -2,6 +2,9 @@
 require_once __DIR__ . '/../inc/db.php';
 require_once __DIR__ . '/../app/autoload.php';
 
+$csrfService = new \App\Services\CsrfService();
+$csrfToken = $csrfService->getToken();
+
 $user = current_user();
 if (!$user) {
     header('Location: /login.php');
@@ -58,6 +61,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
     <form method="post" enctype="multipart/form-data" class="form-inline">
       <input type="hidden" name="current_tab" value="tab-cursos">
       <input type="hidden" name="action" value="create_course">
+      <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
       <input type="text" name="titulo" placeholder="Título" required>
       <textarea name="descricao" placeholder="Descrição" rows="3" required></textarea>
       <input type="file" name="imagem" accept="image/*" required>
@@ -81,6 +85,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
               <form method="post">
                 <input type="hidden" name="action" value="delete_course">
                 <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
+                <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
                 <button class="btn btn-danger" type="submit">Excluir</button>
               </form>
               <details>
@@ -89,6 +94,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
                   <input type="hidden" name="current_tab" value="tab-cursos">
                   <input type="hidden" name="action" value="update_course">
                   <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
+                  <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
                   <input type="text" name="titulo" placeholder="Título" value="<?= sanitize($c['titulo']) ?>" required>
                   <textarea name="descricao" placeholder="Descrição" rows="3" required><?= sanitize($c['descricao']) ?></textarea>
                   <input type="file" name="imagem" accept="image/*">
@@ -109,6 +115,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
     <form method="post" enctype="multipart/form-data" class="form-inline">
       <input type="hidden" name="current_tab" value="tab-slides">
       <input type="hidden" name="action" value="create_slide">
+      <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
       <input type="file" name="imagem" accept="image/*" required>
       <input type="text" name="titulo" placeholder="Título" required>
       <textarea name="descricao" placeholder="Descrição" rows="3" required></textarea>
@@ -130,6 +137,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
             <form method="post">
               <input type="hidden" name="action" value="delete_slide">
               <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
+              <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
               <button class="btn btn-danger" type="submit">Excluir</button>
             </form>
             <details>
@@ -138,6 +146,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
                 <input type="hidden" name="current_tab" value="tab-slides">
                 <input type="hidden" name="action" value="update_slide">
                 <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
+                <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
                 <input type="file" name="imagem" accept="image/*">
                 <input type="text" name="titulo" placeholder="Título" value="<?= sanitize($s['titulo']) ?>" required>
                 <textarea name="descricao" placeholder="Descrição" rows="3" required><?= sanitize($s['descricao']) ?></textarea>
@@ -157,6 +166,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
     <form method="post" enctype="multipart/form-data" class="form-inline">
        <input type="hidden" name="current_tab" value="tab-usuarios">
        <input type="hidden" name="action" value="create_user">
+       <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
        <input type="text" name="nome" placeholder="Nome" required>
        <input type="email" name="email" placeholder="Email" required>
        <input type="password" name="senha" placeholder="Senha" required>
@@ -183,6 +193,7 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
                   <input type="hidden" name="current_tab" value="tab-usuarios">
                   <input type="hidden" name="action" value="update_user">
                   <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                  <input type="hidden" name="csrf_token" value="<?= sanitize($csrfToken) ?>">
                   <input type="text" name="nome" placeholder="Nome" value="<?= sanitize($u['nome']) ?>" required>
                   <input type="email" name="email" placeholder="Email" value="<?= sanitize($u['email']) ?>" required>
                   <label class="checkbox"><input type="checkbox" name="is_admin" value="1" <?= ((int)$u['is_admin'] === 1) ? 'checked' : '' ?>> Administrador</label>
