@@ -92,43 +92,94 @@ if (strpos($uri, '/assets/') === 0 && file_exists($docRoot . $uri)) {
     return false;
 }
 
-// Rota raiz -> login se não autenticado, senão redireciona para index
-if ($uri === '/') {
-    if (isAuthed()) {
-        header('Location: /index.php');
-        exit;
+// Dispatcher padronizado com tabela de rotas e respostas consistentes
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$api = new \App\Controllers\ApiController();
+
+// Tabela de rotas
+$routes = [
+    'GET' => [
+        // Páginas públicas/admin
+        '/' => function() use ($publicDir) {
+            if (isAuthed()) {
+                header('Location: /index.php');
+                return;
+            }
+            require $publicDir . '/login.php';
+        },
+        '/login.php' => function() use ($publicDir) {
+            if (isAuthed()) {
+                header('Location: /index.php');
+                return;
+            }
+            require $publicDir . '/login.php';
+        },
+        '/index.php' => function() use ($publicDir) {
+            if (!isAuthed()) {
+                header('Location: /login.php');
+                return;
+            }
+            require $publicDir . '/index.php';
+        },
+        '/logout.php' => function() use ($publicDir) {
+            require $publicDir . '/logout.php';
+        },
+        '/admin' => function() use ($adminDir) {
+            if (!isAuthed()) {
+                header('Location: /login.php');
+                return;
+            }
+            require $adminDir . '/manage.php';
+        },
+        '/admin/' => function() use ($adminDir) {
+            if (!isAuthed()) {
+                header('Location: /login.php');
+                return;
+            }
+            require $adminDir . '/manage.php';
+        },
+        '/admin/manage.php' => function() use ($adminDir) {
+            if (!isAuthed()) {
+                header('Location: /login.php');
+                return;
+            }
+            require $adminDir . '/manage.php';
+        },
+        // API
+        '/api/health' => [$api, 'getHealth'],
+        '/api/homepage-courses' => [$api, 'getHomepageCourses'],
+        '/api/user/modal-state' => [$api, 'getUserModalState'],
+    ],
+    'POST' => [
+        '/api/homepage-courses' => [$api, 'postHomepageCourses'],
+        '/api/user/main-modal/close' => [$api, 'postUserMainModalClose'],
+    ],
+];
+
+// Helper para detectar se é rota de API
+$isApiPath = function(string $path): bool {
+    return strncmp($path, '/api/', 5) === 0;
+};
+
+$respondNotFound = function(string $path) use ($isApiPath) {
+    if ($isApiPath($path)) {
+        \App\Services\ApiResponse::notFound();
+    } else {
+        http_response_code(404);
+        echo '404 Not Found';
     }
-    require $publicDir . '/login.php';
-    exit;
-}
+};
 
-// Rota explícita para /login.php (se já autenticado, vai para index)
-if ($uri === '/login.php') {
-    if (isAuthed()) {
-        header('Location: /index.php');
-        exit;
+$respondMethodNotAllowed = function(string $path) use ($isApiPath) {
+    if ($isApiPath($path)) {
+        \App\Services\ApiResponse::error('Método não permitido', 405, 'METHOD_NOT_ALLOWED');
+    } else {
+        http_response_code(405);
+        echo '405 Method Not Allowed';
     }
-    require $publicDir . '/login.php';
-    exit;
-}
+};
 
-// Rota /index.php para a aplicação principal (requer JWT)
-if ($uri === '/index.php') {
-    if (!isAuthed()) {
-        header('Location: /login.php');
-        exit;
-    }
-    require $publicDir . '/index.php';
-    exit;
-}
-
-// Rota explícita para /logout.php
-if ($uri === '/logout.php') {
-    require $publicDir . '/logout.php';
-    exit;
-}
-
-// Rota /public/* para arquivos dentro de public
+// Mapear /public/* diretamente
 if (strpos($uri, '/public/') === 0) {
     $target = $publicDir . substr($uri, strlen('/public'));
     if (is_file($target)) {
@@ -137,60 +188,40 @@ if (strpos($uri, '/public/') === 0) {
     }
 }
 
-// Rota admin (requer JWT)
-if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin/manage.php') {
-    if (!isAuthed()) {
-        header('Location: /login.php');
-        exit;
-    }
-    require $adminDir . '/manage.php';
-    exit;
-}
-
-// API: health check
-if ($uri === '/api/health' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $api = new \App\Controllers\ApiController();
-    $api->getHealth();
-    exit;
-}
-
-// API: obter cursos selecionados para a home do usuário
-if ($uri === '/api/homepage-courses' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $api = new \App\Controllers\ApiController();
-    $api->getHomepageCourses();
-    exit;
-}
-
-// API: adicionar curso à home do usuário
-if ($uri === '/api/homepage-courses' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $api = new \App\Controllers\ApiController();
-    $api->postHomepageCourses();
-    exit;
-}
-
-// API: estado do modal principal por usuário
-if ($uri === '/api/user/modal-state' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $api = new \App\Controllers\ApiController();
-    $api->getUserModalState();
-    exit;
-}
-
-// API: marcar modal principal como fechado (não mostrar novamente)
-if ($uri === '/api/user/main-modal/close' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $api = new \App\Controllers\ApiController();
-    $api->postUserMainModalClose();
-    exit;
-}
-
-// Fallback: tentar mapear para public
-$possible = $publicDir . $uri;
-if ($uri !== '/' && file_exists($possible)) {
-    if (is_file($possible)) {
+// Fallback: tentar mapear para arquivo dentro de public quando NÃO começar com /public/
+if (strpos($uri, '/public/') !== 0) {
+    $possible = $publicDir . $uri;
+    if ($uri !== '/' && file_exists($possible) && is_file($possible)) {
         require $possible;
         exit;
     }
 }
 
-// 404 simples
-http_response_code(404);
-echo "404 Not Found";
+// Dispatcher
+if (isset($routes[$method][$uri])) {
+    $handler = $routes[$method][$uri];
+    if (is_callable($handler)) {
+        $handler();
+    } elseif (is_array($handler) && count($handler) === 2) {
+        $controller = $handler[0];
+        $methodName = $handler[1];
+        $controller->$methodName();
+    }
+    exit;
+}
+
+// Se rota existe em outro método, responder 405
+$hasPathInOtherMethod = false;
+foreach ($routes as $m => $map) {
+    if ($m !== $method && isset($map[$uri])) {
+        $hasPathInOtherMethod = true;
+        break;
+    }
+}
+if ($hasPathInOtherMethod) {
+    $respondMethodNotAllowed($uri);
+    exit;
+}
+
+// Sem correspondência: 404 padronizado
+$respondNotFound($uri);
