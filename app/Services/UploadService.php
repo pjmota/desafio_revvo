@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+require_once __DIR__ . '/../../inc/config.php';
+
 class UploadService
 {
-    private const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-    private const ALLOWED_MIME = ['image/jpeg','image/png','image/gif','image/webp'];
+    // Removido: MAX_SIZE_BYTES e ALLOWED_MIME para usar configuração
     private const MIN_WIDTH = 16;
     private const MIN_HEIGHT = 16;
     private const MAX_WIDTH = 6000;
@@ -18,7 +19,9 @@ class UploadService
      */
     public function upload(array $file): ?string
     {
-        $uploadDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads';
+        global $UPLOAD_DIR, $UPLOAD_MAX_SIZE_BYTES, $UPLOAD_ALLOWED_MIME;
+
+        $uploadDir = $UPLOAD_DIR;
         if (!is_dir($uploadDir)) {
             @mkdir($uploadDir, 0775, true);
         }
@@ -34,10 +37,10 @@ class UploadService
 
         // Verificação de tamanho
         $size = (int)($file['size'] ?? 0);
-        if ($size <= 0 || $size > self::MAX_SIZE_BYTES) {
+        if ($size <= 0 || $size > $UPLOAD_MAX_SIZE_BYTES) {
             \App\Services\Logger::warning('upload_invalid_size', [
                 'size' => $size,
-                'max' => self::MAX_SIZE_BYTES,
+                'max' => $UPLOAD_MAX_SIZE_BYTES,
                 'name' => (string)($file['name'] ?? ''),
             ]);
             return null;
@@ -62,10 +65,10 @@ class UploadService
                 finfo_close($fi);
             }
         }
-        if ($mime === null || !in_array($mime, self::ALLOWED_MIME, true)) {
+        if ($mime === null || !in_array($mime, $UPLOAD_ALLOWED_MIME, true)) {
             \App\Services\Logger::warning('upload_disallowed_mime', [
                 'mime' => $mime,
-                'allowed' => self::ALLOWED_MIME,
+                'allowed' => $UPLOAD_ALLOWED_MIME,
                 'name' => (string)($file['name'] ?? ''),
             ]);
             return null;
