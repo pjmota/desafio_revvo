@@ -11,8 +11,6 @@ if (!$user) {
     exit;
 }
 
-$pdo = db();
-
 // Processar ações via Controller (MVC)
 (new \App\Controllers\AdminController())->handlePost();
 
@@ -23,7 +21,7 @@ $userRepo = new \App\Repositories\UserRepository();
 
 $cursos = $coursesRepo->listAll();
 $slides = $slideRepo->listAll();
-$usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FROM usuarios ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+$usuarios = $userRepo->listAll();
 
 ?>
 <!doctype html>

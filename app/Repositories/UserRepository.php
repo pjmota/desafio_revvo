@@ -47,4 +47,15 @@ class UserRepository
             return null;
         }
     }
+
+    public function listAll(): array
+    {
+        try {
+            $pdo = db();
+            $stmt = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FROM usuarios ORDER BY criado_em DESC');
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
 }
