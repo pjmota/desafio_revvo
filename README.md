@@ -81,9 +81,9 @@ Alternativa de execução sem editar php.ini (exemplo):
 ## Modais
 - Modal principal de destaque (conteúdo em `inc/views/modal.php`), com imagem e botão.
 - Estado “mostrar modal principal” por usuário é controlado em banco (`usuarios.show_main_modal`).
-- APIs para consultar e marcar como fechado:
-  - GET `/api/user/modal-state` → `{ show_main_modal: boolean }`
-  - POST `/api/user/main-modal/close` → `{ ok: boolean }`
+- APIs para consultar e marcar como fechado (respostas padronizadas):
+  - GET `/api/user/modal-state` → `200 {"success":true,"data":{"show_main_modal":boolean}}` (401 quando não autenticado)
+  - POST `/api/user/main-modal/close` → `200 {"success":true,"data":{"modal_closed":true}}` (401 quando não autenticado)
 - Alerta por popup no Admin para `admin_guard` (impede remover o último administrador).
 
 ## Administração (CRUD)
@@ -122,8 +122,12 @@ Alternativa de execução sem editar php.ini (exemplo):
 - Fallback da Home é exibido quando não há dados ou o SQLite está indisponível.
 
 ## APIs de customização da Home
-- GET `/api/homepage-courses`: retorna `{ course_ids: number[], recent_course_ids: number[] }` (seleções do usuário, quando usado).
-- POST `/api/homepage-courses` body: `{ "course_id": number }` → `{ ok: boolean }` (adiciona curso à seleção do usuário).
+- GET `/api/homepage-courses`: `200 {"success":true,"data":{"course_ids":[...],"recent_course_ids":[...]}}` (401 quando não autenticado)
+- POST `/api/homepage-courses` body: `{ "course_id": number }` →
+  - `200 {"success":true,"data":{"added":true,"course_id":<id>}}`
+  - `400 {"success":false,"message":"ID do curso é obrigatório e deve ser numérico","error_code":"BAD_REQUEST"}`
+  - `422 {"success":false,"message":"Falha ao adicionar curso","error_code":"ADD_COURSE_FAILED"}`
+  - `401` quando não autenticado
 
 ## Dicas de teste
 1. Faça login com `teste@teste.com` / `123456` (admin).
@@ -139,7 +143,33 @@ Alternativa de execução sem editar php.ini (exemplo):
 - “Porta 8000 ocupada” → Use outra porta: `php -S localhost:8080 router.php` e acesse `http://localhost:8080`.
 - “Sessão expirada (JWT)” → Faça login novamente. O refresh pode não ocorrer se o cookie de refresh tiver expirado.
 
+## Formato das respostas da API
+- Sucesso (`200`): `{"success":true,"data":{...},"timestamp":"<ISO8601>"}`
+- Erro genérico (`400`): `{"success":false,"error":{"message":"<mensagem>","code":"BAD_REQUEST"},"timestamp":"<ISO8601>"}`
+- Não autorizado (`401`): `{"success":false,"error":{"message":"Não autorizado","code":"UNAUTHORIZED"},"timestamp":"<ISO8601>"}`
+- Não encontrado (`404`): `{"success":false,"error":{"message":"Não encontrado","code":"NOT_FOUND"},"timestamp":"<ISO8601>"}`
+- Erro de negócio (`422`): `{"success":false,"error":{"message":"<mensagem>","code":"<CÓDIGO_ESPECÍFICO>"},"timestamp":"<ISO8601>"}`
+- Erro interno (`500`): `{"success":false,"error":{"message":"Erro interno","code":"INTERNAL_ERROR"},"timestamp":"<ISO8601>"}`
+
+## Segurança (Resumo)
+- CSRF: campos ocultos com token nas formas do Admin; validação no servidor (`CsrfService` + `AdminController`).
+- Uploads: validação de MIME, extensão e tamanho; nomes únicos e caminhos seguros (via `UploadService`).
+- Views x Dados: remoção de queries PDO diretas, uso de Repositories (ex.: `UserRepository::listAll()` em `admin/manage.php`).
+- Autenticação: cookies HttpOnly com SameSite; tentativa de refresh para sessão contínua.
+
+## Testes Automatizados (Smoke)
+- Scripts de smoke test para APIs foram adicionados em `tests/`.
+- Como rodar:
+  1) Inicie `php -S localhost:8080 router.php`
+  2) Execute `php tests/api_smoke.php` para verificar respostas não autenticadas (401) e formato JSON.
+  3) Para testar autenticado, copie o cookie `jwt` do navegador e ajuste a constante `COOKIE_HEADER` no script.
+- Os testes cobrem:
+  - GET `/api/homepage-courses` (401 sem autenticação)
+  - POST `/api/homepage-courses` (401 sem autenticação; validações se autenticado)
+  - GET `/api/user/modal-state` (401 sem autenticação)
+  - POST `/api/user/main-modal/close` (401 sem autenticação)
+
 ## Observações sobre versionamento
 - O arquivo do banco (`data/*.sqlite`) geralmente não deve ser versionado; o banco é recriado ao iniciar.
 - O segredo JWT é salvo em `data/jwt_secret.txt`. Para maior segurança, considere adicioná-lo ao `.gitignore` se ainda não estiver.
-- A pasta `assets/uploads/` pode conter arquivos gerados pelo uso da aplicação. Decida se devem ser versionados conforme a política do projeto.
+- A pasta `assets/uploads/` pode conter arquivos gerados pelo uso da aplicação. Decide se devem ser versionados conforme a política do projeto.
