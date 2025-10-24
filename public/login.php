@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../app/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\AuthController;
 

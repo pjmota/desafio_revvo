@@ -1,7 +1,7 @@
 <?php
 // Router para servidor embutido do PHP com proteção por JWT
 require_once __DIR__ . '/inc/db.php';
-require_once __DIR__ . '/app/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 init_db();
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';

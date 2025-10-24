@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/db.php';
-require_once __DIR__ . '/../app/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $csrfService = new \App\Services\CsrfService();
 $csrfToken = $csrfService->getToken();

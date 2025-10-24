@@ -1,0 +1,17 @@
+{
+  "name": "revvo/desafio-revvo",
+  "type": "project",
+  "description": "Projeto PHP com autoload PSR-4 via Composer.",
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "require": {},
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
