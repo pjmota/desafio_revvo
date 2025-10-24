@@ -10,115 +10,18 @@ if (!$user) {
 
 $pdo = db();
 
-// Inicializar serviço de upload
-$uploadService = new \App\Services\UploadService();
+// Processar ações via Controller (MVC)
+(new \App\Controllers\AdminController())->handlePost();
 
-// CRUD Cursos (create/update/delete)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    if ($action === 'create_course') {
-        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        $titulo = trim($_POST['titulo'] ?? '');
-        $descricao = trim($_POST['descricao'] ?? '');
-        if ($imgPath && $titulo !== '' && $descricao !== '') {
-            $stmt = $pdo->prepare('INSERT INTO cursos(titulo, descricao, imagem) VALUES (?, ?, ?)');
-            $stmt->execute([$titulo, $descricao, $imgPath]);
-        }
-    } elseif ($action === 'update_course') {
-        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        if ($imgPath) {
-            $stmt = $pdo->prepare('UPDATE cursos SET titulo=?, descricao=?, imagem=? WHERE id=?');
-            $stmt->execute([$_POST['titulo'] ?? '', $_POST['descricao'] ?? '', $imgPath, (int)($_POST['id'] ?? 0)]);
-        } else {
-            $stmt = $pdo->prepare('UPDATE cursos SET titulo=?, descricao=? WHERE id=?');
-            $stmt->execute([$_POST['titulo'] ?? '', $_POST['descricao'] ?? '', (int)($_POST['id'] ?? 0)]);
-        }
-    } elseif ($action === 'delete_course') {
-        $stmt = $pdo->prepare('DELETE FROM cursos WHERE id=?');
-        $stmt->execute([(int)($_POST['id'] ?? 0)]);
-    } elseif ($action === 'create_slide') {
-        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        $titulo = trim($_POST['titulo'] ?? '');
-        $descricao = trim($_POST['descricao'] ?? '');
-        $link = trim($_POST['link'] ?? '');
-        if ($link === '') { $link = '#'; }
-        if ($imgPath && $titulo !== '' && $descricao !== '') {
-            $stmt = $pdo->prepare('INSERT INTO slides(imagem, titulo, descricao, link) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$imgPath, $titulo, $descricao, $link]);
-        }
-    } elseif ($action === 'update_slide') {
-        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        $titulo = trim($_POST['titulo'] ?? '');
-        $descricao = trim($_POST['descricao'] ?? '');
-        $link = trim($_POST['link'] ?? '');
-        if ($link === '') { $link = '#'; }
-        if ($imgPath) {
-            $stmt = $pdo->prepare('UPDATE slides SET imagem=?, titulo=?, descricao=?, link=? WHERE id=?');
-            $stmt->execute([$imgPath, $titulo, $descricao, $link, (int)($_POST['id'] ?? 0)]);
-        } else {
-            $stmt = $pdo->prepare('UPDATE slides SET titulo=?, descricao=?, link=? WHERE id=?');
-            $stmt->execute([$titulo, $descricao, $link, (int)($_POST['id'] ?? 0)]);
-        }
-    } elseif ($action === 'delete_slide') {
-        $stmt = $pdo->prepare('DELETE FROM slides WHERE id=?');
-        $stmt->execute([(int)($_POST['id'] ?? 0)]);
-    } elseif ($action === 'create_user') {
-        $nome = trim($_POST['nome'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $senha = (string)($_POST['senha'] ?? '');
-        $avatarPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        if ($nome !== '' && $email !== '' && $senha !== '') {
-            try {
-                $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
-                $stmt = $pdo->prepare('INSERT INTO usuarios (nome, email, senha_hash, avatar, is_admin) VALUES (?, ?, ?, ?, ?)');
-                $stmt->execute([$nome, $email, password_hash($senha, PASSWORD_DEFAULT), $avatarPath, $isAdmin]);
-                $status = 'ok';
-            } catch (Throwable $e) {
-                $status = 'dup';
-            }
-        } else {
-            $status = 'err';
-        }
-    } elseif ($action === 'update_user') {
-        $id = (int)($_POST['id'] ?? 0);
-        $nome = trim($_POST['nome'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
-        $avatarPath = $uploadService->upload($_FILES['imagem'] ?? []);
-        if ($id > 0 && $nome !== '' && $email !== '') {
-            try {
-                // Proteção: não permitir remover o último admin
-                $curStmt = $pdo->prepare('SELECT is_admin FROM usuarios WHERE id=?');
-                $curStmt->execute([$id]);
-                $curRow = $curStmt->fetch(PDO::FETCH_ASSOC);
-                $currentIsAdmin = (int)($curRow['is_admin'] ?? 0);
-                $adminCount = (int)$pdo->query('SELECT COUNT(*) FROM usuarios WHERE is_admin = 1')->fetchColumn();
+// Carregar dados via Repositórios
+$coursesRepo = new \App\Repositories\CourseRepository();
+$slideRepo = new \App\Repositories\SlideRepository();
+$userRepo = new \App\Repositories\UserRepository();
 
-                if ($currentIsAdmin === 1 && $isAdmin === 0 && $adminCount === 1) {
-                    $status = 'admin_guard';
-                } else {
-                    $stmt = $pdo->prepare('UPDATE usuarios SET nome=?, email=?, is_admin=?, avatar=COALESCE(?, avatar) WHERE id=?');
-                    $stmt->execute([$nome, $email, $isAdmin, $avatarPath, $id]);
-                    $status = 'ok';
-                }
-            } catch (Throwable $e) {
-                $status = 'dup';
-            }
-        } else {
-            $status = 'err';
-        }
-    }
-    $status = $status ?? 'ok';
-    $tab = $_POST['current_tab'] ?? '';
-    $qs = 'status=' . urlencode($status);
-    if ($tab !== '') { $qs .= '&tab=' . urlencode($tab); }
-    header('Location: /admin/manage.php?' . $qs);
-    exit;
-}
-
-$cursos = $pdo->query('SELECT * FROM cursos ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
-$slides = $pdo->query('SELECT * FROM slides ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+$cursos = $coursesRepo->listAll();
+$slides = $slideRepo->listAll();
 $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FROM usuarios ORDER BY criado_em DESC')->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!doctype html>
 <html lang="pt-br">
