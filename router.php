@@ -82,46 +82,29 @@ if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin/manage.php') {
 
 // API: obter cursos selecionados para a home do usuário
 if ($uri === '/api/homepage-courses' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (!isAuthed()) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
-    header('Content-Type: application/json');
-    $u = current_user();
-    $ids = user_homepage_get_selected_course_ids((int)$u['id']);
-    $recent = user_homepage_get_recent_course_ids((int)$u['id']);
-    echo json_encode(['course_ids' => $ids, 'recent_course_ids' => $recent]);
+    $api = new \App\Controllers\ApiController();
+    $api->getHomepageCourses();
     exit;
 }
 
 // API: adicionar curso à home do usuário
 if ($uri === '/api/homepage-courses' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isAuthed()) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
-    header('Content-Type: application/json');
-    $u = current_user();
-    $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
-    $cid = isset($data['course_id']) ? (int)$data['course_id'] : 0;
-    if ($cid <= 0) { http_response_code(400); echo json_encode(['error'=>'invalid_course_id']); exit; }
-    $ok = user_homepage_add_course((int)$u['id'], $cid);
-    echo json_encode(['ok' => $ok]);
+    $api = new \App\Controllers\ApiController();
+    $api->postHomepageCourses();
     exit;
 }
 
 // API: estado do modal principal por usuário
 if ($uri === '/api/user/modal-state' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (!isAuthed()) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
-    header('Content-Type: application/json');
-    $u = current_user();
-    $show = user_get_modal_state((int)$u['id']);
-    echo json_encode(['show_main_modal' => $show]);
+    $api = new \App\Controllers\ApiController();
+    $api->getUserModalState();
     exit;
 }
 
 // API: marcar modal principal como fechado (não mostrar novamente)
 if ($uri === '/api/user/main-modal/close' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isAuthed()) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
-    header('Content-Type: application/json');
-    $u = current_user();
-    $ok = user_set_modal_closed_once((int)$u['id']);
-    echo json_encode(['ok' => $ok]);
+    $api = new \App\Controllers\ApiController();
+    $api->postUserMainModalClose();
     exit;
 }
 

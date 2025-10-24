@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/db.php';
+require_once __DIR__ . '/../app/autoload.php';
 
 $user = current_user();
 if (!$user) {
