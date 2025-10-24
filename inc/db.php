@@ -111,13 +111,44 @@ function sanitize(string $s): string {
 
 function upload_image(array $file): ?string {
     global $UPLOAD_DIR;
-    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) return null;
-    $name = basename($file['name']);
-    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg','jpeg','png','gif','webp'])) return null;
-    $safe = uniqid('img_', true) . '.' . $ext;
+    // Verificar erro e tamanho
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) { return null; }
+    $size = (int)($file['size'] ?? 0);
+    if ($size <= 0 || $size > 5 * 1024 * 1024) { return null; } // limite 5MB
+
+    $tmp = $file['tmp_name'] ?? '';
+    if (!is_string($tmp) || $tmp === '' || !is_uploaded_file($tmp)) { return null; }
+
+    // Validação MIME real
+    $mime = null;
+    if (function_exists('finfo_open')) {
+        $fi = finfo_open(FILEINFO_MIME_TYPE);
+        if ($fi) {
+            $mime = finfo_file($fi, $tmp) ?: null;
+            finfo_close($fi);
+        }
+    }
+    $allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+    if ($mime === null || !in_array($mime, $allowed, true)) { return null; }
+
+    // Verificação extra de imagem
+    $imgInfo = @getimagesize($tmp);
+    if ($imgInfo === false) { return null; }
+
+    // Mapear extensão pelo MIME para evitar mismatch
+    $extMap = [
+        'image/jpeg' => 'jpg',
+        'image/png'  => 'png',
+        'image/gif'  => 'gif',
+        'image/webp' => 'webp',
+    ];
+    $ext = $extMap[$mime] ?? null;
+    if ($ext === null) { return null; }
+
+    // Nome de arquivo seguro
+    $safe = 'img_' . str_replace('.', '', uniqid('', true)) . '.' . $ext;
     $dest = $UPLOAD_DIR . '/' . $safe;
-    if (move_uploaded_file($file['tmp_name'], $dest)) {
+    if (@move_uploaded_file($tmp, $dest)) {
         return '/assets/uploads/' . $safe;
     }
     return null;
