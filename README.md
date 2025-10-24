@@ -173,3 +173,48 @@ Alternativa de execução sem editar php.ini (exemplo):
 - O arquivo do banco (`data/*.sqlite`) geralmente não deve ser versionado; o banco é recriado ao iniciar.
 - O segredo JWT é salvo em `data/jwt_secret.txt`. Para maior segurança, considere adicioná-lo ao `.gitignore` se ainda não estiver.
 - A pasta `assets/uploads/` pode conter arquivos gerados pelo uso da aplicação. Decide se devem ser versionados conforme a política do projeto.
+
+## Qualidade e Operação
+
+### Health Check
+- Endpoint: `GET /api/health`
+- Retorno: `200 OK` com JSON padronizado:
+```
+{
+  "success": true,
+  "data": {
+    "status": "ok",
+    "php_version": "8.x.x",
+    "sqlite_enabled": true,
+    "time": "2025-01-01T12:00:00Z"
+  },
+  "timestamp": "2025-01-01T12:00:00Z"
+}
+```
+- Útil para monitoramento e validação rápida do ambiente.
+
+### Logger
+- Serviço: `App\Services\Logger`
+- Saída: `data/logs/app.log` (JSON Lines: `timestamp`, `level`, `message`, `context`)
+- Níveis suportados: `info`, `warning`, `error`
+- Uso interno em erros de API e handlers globais (router).
+
+### Handlers Globais
+- Configurados no `router.php`: `set_error_handler`, `set_exception_handler`, `register_shutdown_function`
+- Comportamento:
+  - Em rotas `\/api\/...`: responde com `ApiResponse::internalError` (JSON padronizado)
+  - Em páginas públicas/admin: define `500` e exibe mensagem simples
+- Todos os eventos críticos são logados no `app.log`.
+
+### Scripts de Qualidade e Saúde
+- `scripts/quality.ps1`:
+  - Lint: `php -l` em todos `.php`
+  - Executa `tests/api_smoke.php`
+  - Mostra últimos logs (`data/logs/app.log`)
+  - Uso: `powershell -ExecutionPolicy Bypass -File .\scripts\quality.ps1 -BaseUrl http://localhost:8080`
+- `scripts/health.ps1`:
+  - Consulta `GET /api/health` e imprime campos principais
+  - Exit `0` em OK, `1` em falha
+  - Uso: `powershell -ExecutionPolicy Bypass -File .\scripts\health.ps1 -BaseUrl http://localhost:8080`
+
+Dica: se usar outra porta, ajuste `-BaseUrl` nos scripts. Se rodar o servidor com `php -S localhost:8000 router.php`, use `http://localhost:8000`.

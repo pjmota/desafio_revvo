@@ -10,6 +10,73 @@ $docRoot = __DIR__;
 $publicDir = __DIR__ . '/public';
 $adminDir = __DIR__ . '/admin';
 
+// Handlers globais de erro/exception/shutdown com log e resposta apropriada
+set_error_handler(function ($severity, $message, $file, $line) {
+    try {
+        \App\Services\Logger::error('PHP Error', [
+            'severity' => $severity,
+            'message' => $message,
+            'file' => $file,
+            'line' => $line,
+            'uri' => parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH)
+        ]);
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        if (strpos($path, '/api/') === 0) {
+            \App\Services\ApiResponse::internalError('Erro interno do servidor');
+        } else {
+            http_response_code(500);
+            echo 'Erro interno do servidor';
+        }
+    } catch (\Throwable $e) {
+        // Silencioso para evitar loops
+    }
+});
+
+set_exception_handler(function ($e) {
+    try {
+        \App\Services\Logger::error('Uncaught Exception', [
+            'exception' => get_class($e),
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'uri' => parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH)
+        ]);
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        if (strpos($path, '/api/') === 0) {
+            \App\Services\ApiResponse::internalError('Erro interno do servidor');
+        } else {
+            http_response_code(500);
+            echo 'Erro interno do servidor';
+        }
+    } catch (\Throwable $e2) {
+        // Silencioso
+    }
+});
+
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        try {
+            \App\Services\Logger::error('Shutdown Fatal', [
+                'type' => $err['type'],
+                'message' => $err['message'],
+                'file' => $err['file'],
+                'line' => $err['line'],
+                'uri' => parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH)
+            ]);
+            $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+            if (strpos($path, '/api/') === 0) {
+                \App\Services\ApiResponse::internalError('Erro interno do servidor');
+            } else {
+                http_response_code(500);
+                echo 'Erro interno do servidor';
+            }
+        } catch (\Throwable $e3) {
+            // Silencioso
+        }
+    }
+});
+
 function isAuthed(): bool {
     $u = current_user();
     return is_array($u) && !empty($u['id']);
@@ -77,6 +144,13 @@ if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin/manage.php') {
         exit;
     }
     require $adminDir . '/manage.php';
+    exit;
+}
+
+// API: health check
+if ($uri === '/api/health' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $api = new \App\Controllers\ApiController();
+    $api->getHealth();
     exit;
 }
 

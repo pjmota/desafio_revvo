@@ -6,6 +6,7 @@ namespace App\Controllers;
 use App\Repositories\HomepageRepository;
 use App\Repositories\UserRepository;
 use App\Services\ApiResponse;
+use App\Services\Logger;
 
 class ApiController
 {
@@ -52,6 +53,7 @@ class ApiController
                 'recent_course_ids' => $recentIds
             ]);
         } catch (\Throwable $e) {
+            Logger::error('Erro ao buscar cursos da homepage', ['exception' => $e->getMessage()]);
             ApiResponse::internalError('Erro ao buscar cursos da homepage');
         }
     }
@@ -101,6 +103,7 @@ class ApiController
                 ApiResponse::error('Falha ao adicionar curso', 422, 'ADD_COURSE_FAILED');
             }
         } catch (\Throwable $e) {
+            Logger::error('Erro ao adicionar curso à homepage', ['exception' => $e->getMessage()]);
             ApiResponse::internalError('Erro ao adicionar curso à homepage');
         }
     }
@@ -125,6 +128,7 @@ class ApiController
                 'show_main_modal' => $showModal
             ]);
         } catch (\Throwable $e) {
+            Logger::error('Erro ao buscar estado do modal', ['exception' => $e->getMessage()]);
             ApiResponse::internalError('Erro ao buscar estado do modal');
         }
     }
@@ -151,7 +155,24 @@ class ApiController
                 ApiResponse::error('Falha ao fechar modal', 422, 'CLOSE_MODAL_FAILED');
             }
         } catch (\Throwable $e) {
+            Logger::error('Erro ao fechar modal', ['exception' => $e->getMessage()]);
             ApiResponse::internalError('Erro ao fechar modal');
+        }
+    }
+
+    public function getHealth(): void
+    {
+        try {
+            $data = [
+                'status' => 'ok',
+                'php_version' => PHP_VERSION,
+                'sqlite_enabled' => extension_loaded('sqlite3') && extension_loaded('pdo_sqlite'),
+                'time' => date('c'),
+            ];
+            ApiResponse::success($data);
+        } catch (\Throwable $e) {
+            Logger::error('Falha no health check', ['exception' => $e->getMessage()]);
+            ApiResponse::internalError('Falha no health check');
         }
     }
 }
