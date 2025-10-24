@@ -218,3 +218,25 @@ Alternativa de execução sem editar php.ini (exemplo):
   - Uso: `powershell -ExecutionPolicy Bypass -File .\scripts\health.ps1 -BaseUrl http://localhost:8080`
 
 Dica: se usar outra porta, ajuste `-BaseUrl` nos scripts. Se rodar o servidor com `php -S localhost:8000 router.php`, use `http://localhost:8000`.
+
+## Testes (Unitários)
+- Pré-requisitos:
+  - `PHP >= 8.1`
+  - `Composer` instalado (ou `composer.phar` na raiz)
+  - Extensão `mbstring` habilitada no CLI
+- Instalação de dependências:
+  - `php composer.phar update phpunit/phpunit -n` (se necessário, usar `--ignore-platform-req=ext-mbstring`)
+- Habilitar `mbstring` no CLI:
+  - Descobrir qual `php.ini` está em uso: `php --ini`
+  - Editar o `php.ini` do CLI e garantir `extension=mbstring` habilitada
+  - No Windows, verifique se `ext\\php_mbstring.dll` existe e se `extension_dir` aponta para a pasta `ext`
+- Como executar os testes:
+  - Com `mbstring` habilitado: `vendor\\bin\\phpunit -c phpunit.xml`
+  - Sem habilitar globalmente: `php -d extension=mbstring vendor\\bin\\phpunit -c phpunit.xml`
+  - Executar arquivo específico: `php -d extension=mbstring vendor\\bin\\phpunit tests\\unit\\Repositories\\SlideRepositoryTest.php`
+- Estrutura dos testes:
+  - O bootstrap (`tests/bootstrap.php`) usa SQLite em memória e prepara o esquema de testes
+  - Suites em `tests/unit`: Services (`CsrfService`) e Repositories (`User`, `Course`, `Homepage`, `Slide`)
+- Cobertura (opcional):
+  - `vendor\\bin\\phpunit --coverage-text` (requer `xdebug` ou `pcov` habilitado)
+  - `401` quando não autenticado
