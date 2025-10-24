@@ -7,12 +7,7 @@ require_once __DIR__ . '/../../inc/config.php';
 
 class UploadService
 {
-    // Removido: MAX_SIZE_BYTES e ALLOWED_MIME para usar configuração
-    private const MIN_WIDTH = 16;
-    private const MIN_HEIGHT = 16;
-    private const MAX_WIDTH = 6000;
-    private const MAX_HEIGHT = 6000;
-
+    // Dimensões virão do config global
     /**
      * Faz upload de imagens com validações reforçadas.
      * Retorna caminho relativo (ex.: /assets/uploads/filename.ext) ou null em caso de falha.
@@ -20,6 +15,7 @@ class UploadService
     public function upload(array $file): ?string
     {
         global $UPLOAD_DIR, $UPLOAD_MAX_SIZE_BYTES, $UPLOAD_ALLOWED_MIME;
+        global $UPLOAD_MIN_WIDTH, $UPLOAD_MIN_HEIGHT, $UPLOAD_MAX_WIDTH, $UPLOAD_MAX_HEIGHT;
 
         $uploadDir = $UPLOAD_DIR;
         if (!is_dir($uploadDir)) {
@@ -85,14 +81,14 @@ class UploadService
         }
         $width = (int)($imgInfo[0] ?? 0);
         $height = (int)($imgInfo[1] ?? 0);
-        if ($width < self::MIN_WIDTH || $height < self::MIN_HEIGHT || $width > self::MAX_WIDTH || $height > self::MAX_HEIGHT) {
+        if ($width < $UPLOAD_MIN_WIDTH || $height < $UPLOAD_MIN_HEIGHT || $width > $UPLOAD_MAX_WIDTH || $height > $UPLOAD_MAX_HEIGHT) {
             \App\Services\Logger::warning('upload_dimensions_out_of_range', [
                 'width' => $width,
                 'height' => $height,
-                'min_w' => self::MIN_WIDTH,
-                'min_h' => self::MIN_HEIGHT,
-                'max_w' => self::MAX_WIDTH,
-                'max_h' => self::MAX_HEIGHT,
+                'min_w' => $UPLOAD_MIN_WIDTH,
+                'min_h' => $UPLOAD_MIN_HEIGHT,
+                'max_w' => $UPLOAD_MAX_WIDTH,
+                'max_h' => $UPLOAD_MAX_HEIGHT,
                 'name' => (string)($file['name'] ?? ''),
             ]);
             return null;

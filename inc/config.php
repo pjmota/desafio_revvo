@@ -10,6 +10,12 @@ $UPLOAD_DIR = __DIR__ . '/../assets/uploads';
 $UPLOAD_MAX_SIZE_BYTES = 5 * 1024 * 1024; // ajuste para 10 * 1024 * 1024 se desejar 10MB
 $UPLOAD_ALLOWED_MIME = ['image/jpeg','image/png','image/gif','image/webp'];
 
+// Limites de dimensões configuráveis
+$UPLOAD_MIN_WIDTH = 16;
+$UPLOAD_MIN_HEIGHT = 16;
+$UPLOAD_MAX_WIDTH = 6000;
+$UPLOAD_MAX_HEIGHT = 6000;
+
 // Garantir que os diretórios existem
 if (!is_dir($DATA_DIR)) {
     @mkdir($DATA_DIR, 0775, true);
