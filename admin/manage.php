@@ -9,11 +9,14 @@ if (!$user) {
 
 $pdo = db();
 
+// Inicializar serviço de upload
+$uploadService = new \App\Services\UploadService();
+
 // CRUD Cursos (create/update/delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     if ($action === 'create_course') {
-        $imgPath = upload_image($_FILES['imagem'] ?? []);
+        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         if ($imgPath && $titulo !== '' && $descricao !== '') {
@@ -21,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$titulo, $descricao, $imgPath]);
         }
     } elseif ($action === 'update_course') {
-        $imgPath = upload_image($_FILES['imagem'] ?? []);
+        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
         if ($imgPath) {
             $stmt = $pdo->prepare('UPDATE cursos SET titulo=?, descricao=?, imagem=? WHERE id=?');
             $stmt->execute([$_POST['titulo'] ?? '', $_POST['descricao'] ?? '', $imgPath, (int)($_POST['id'] ?? 0)]);
@@ -33,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('DELETE FROM cursos WHERE id=?');
         $stmt->execute([(int)($_POST['id'] ?? 0)]);
     } elseif ($action === 'create_slide') {
-        $imgPath = upload_image($_FILES['imagem'] ?? []);
+        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         $link = trim($_POST['link'] ?? '');
@@ -43,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$imgPath, $titulo, $descricao, $link]);
         }
     } elseif ($action === 'update_slide') {
-        $imgPath = upload_image($_FILES['imagem'] ?? []);
+        $imgPath = $uploadService->upload($_FILES['imagem'] ?? []);
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         $link = trim($_POST['link'] ?? '');
@@ -62,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nome = trim($_POST['nome'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $senha = (string)($_POST['senha'] ?? '');
-        $avatarPath = upload_image($_FILES['imagem'] ?? []);
+        $avatarPath = $uploadService->upload($_FILES['imagem'] ?? []);
         if ($nome !== '' && $email !== '' && $senha !== '') {
             try {
                 $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
@@ -80,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nome = trim($_POST['nome'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $isAdmin = isset($_POST['is_admin']) ? 1 : 0;
-        $avatarPath = upload_image($_FILES['imagem'] ?? []);
+        $avatarPath = $uploadService->upload($_FILES['imagem'] ?? []);
         if ($id > 0 && $nome !== '' && $email !== '') {
             try {
                 // Proteção: não permitir remover o último admin
