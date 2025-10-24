@@ -48,6 +48,8 @@ $usuarios = $pdo->query('SELECT id, nome, email, avatar, is_admin, criado_em FRO
       <div class="alert alert-error">Preencha os campos obrigatórios.</div>
     <?php elseif ($_GET['status'] === 'admin_guard'): ?>
       <div class="alert alert-error">Para remover o último administrador, defina outro usuário como administrador primeiro.</div>
++   <?php elseif ($_GET['status'] === 'csrf'): ?>
++     <div class="alert alert-error">Sessão expirada ou ação não autorizada. Atualize a página e tente novamente.</div>
     <?php endif; ?>
   <?php endif; ?>
   <div class="tabs" role="tablist" aria-label="Admin">
