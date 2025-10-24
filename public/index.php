@@ -18,6 +18,10 @@ $slides = $home['slides'] ?? [];
 $cursosDb = $home['cursosDb'] ?? [];
 $cursos = $home['cursos'] ?? [];
 $isCursosFallback = $home['isCursosFallback'] ?? true;
+$userName = (string)($user['nome'] ?? 'Usuário');
+$profile = $userRepo->getProfileById((int)$user['id']);
+$avatarPath = !empty($profile['avatar'] ?? '') ? (string)$profile['avatar'] : '/assets/uploads/avatar.avif';
+$isAdmin = ((int)($profile['is_admin'] ?? 0) === 1);
 ?>
 <!doctype html>
 <html lang="pt-br">

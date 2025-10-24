@@ -1,24 +1,19 @@
 <?php
-require_once __DIR__ . '/../inc/db.php';
+require_once __DIR__ . '/../app/autoload.php';
+
+use App\Controllers\AuthController;
 
 $login_error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = $_POST['email'] ?? '';
   $senha = $_POST['senha'] ?? '';
-  try {
-    $pdo = db();
-    $stmt = $pdo->prepare('SELECT id, nome, email, senha_hash FROM usuarios WHERE email = ?');
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($user && password_verify($senha, (string)$user['senha_hash'])) {
-      issue_tokens(['id' => (int)$user['id'], 'nome' => (string)$user['nome'], 'email' => (string)$user['email']], 900, 3600);
-      header('Location: /index.php');
-      exit;
-    } else {
-      $login_error = 'Credenciais inválidas. Use email teste@teste.com e senha 123456';
-    }
-  } catch (Throwable $e) {
-    $login_error = 'Erro de login: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+  $auth = new AuthController();
+  $err = $auth->login($email, $senha);
+  if ($err !== null) {
+    $login_error = $err;
+  } else {
+    // AuthController faz redirect em sucesso
+    exit;
   }
 }
 ?>

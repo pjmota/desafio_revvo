@@ -1,19 +1,8 @@
 <?php
-require_once __DIR__ . '/../db.php';
-$u = current_user();
-$userName = htmlspecialchars($u['nome'] ?? 'Usuário', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-$avatarPath = '/assets/uploads/avatar.avif';
-$isAdmin = false;
-if (is_array($u) && isset($u['id'])) {
-  try {
-    $pdo = db();
-    $stmt = $pdo->prepare('SELECT avatar, is_admin FROM usuarios WHERE id = ?');
-    $stmt->execute([(int)$u['id']]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!empty($row['avatar'])) { $avatarPath = $row['avatar']; }
-    $isAdmin = ((int)($row['is_admin'] ?? 0) === 1);
-  } catch (Throwable $e) { /* ignore */ }
-}
+// Variáveis esperadas: $userName, $avatarPath, $isAdmin (fornecidas pelo controller)
+$userName = htmlspecialchars($userName ?? 'Usuário', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$avatarPath = htmlspecialchars($avatarPath ?? '/assets/uploads/avatar.avif', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$isAdmin = (bool)($isAdmin ?? false);
 ?>
 <header class="header" role="banner">
   <div class="header__container">
