@@ -240,3 +240,35 @@ Dica: se usar outra porta, ajuste `-BaseUrl` nos scripts. Se rodar o servidor co
 - Cobertura (opcional):
   - `vendor\\bin\\phpunit --coverage-text` (requer `xdebug` ou `pcov` habilitado)
   - `401` quando não autenticado
+## Guia de Contribuição
+- Estilo (PSR-12):
+  - Usa `php-cs-fixer` com regras `@PSR12`. Checar: `vendor\\bin\\php-cs-fixer.bat fix app inc admin public router.php tests --dry-run --diff --verbose --ansi --rules=@PSR12 --using-cache=no --no-interaction`
+  - Corrigir automaticamente: `vendor\\bin\\php-cs-fixer.bat fix app inc admin public router.php tests --rules=@PSR12 --using-cache=no --no-interaction`
+  - Recomenda-se rodar `scripts/quality.ps1` antes de abrir PR.
+- Testes:
+  - Unitários em `tests/unit`, com SQLite em memória via `tests/bootstrap.php`.
+  - Adicione testes para novos Services/Repositories e cenários de controle (erros, entradas inválidas, etc.).
+  - Executar: `vendor\\bin\\phpunit -c phpunit.xml` (ou `php -d extension=mbstring vendor\\bin\\phpunit -c phpunit.xml`).
+- Rotas:
+  - Definir novas rotas em `router.php` no array `$routes` (seções `GET`/`POST`).
+  - Para APIs use Controllers (`App\\Controllers\\ApiController`) e middlewares apropriados:
+    - `auth_api` para exigir autenticação JWT.
+    - `csrf_api` para exigir cabeçalho `X-CSRF-Token` em mutações (`POST`).
+  - Padronize respostas com `App\\Services\\ApiResponse` (`success`, `error`, `badRequest`, `unauthorized`, `internalError`, `notFound`).
+  - Semântica: `GET` para leitura, `POST` para alteração/criação.
+- Convenções de erro:
+  - Estrutura JSON: `{"success":false,"error":{"message":"<mensagem>","code":"<CODIGO>"},"timestamp":"<ISO8601>"}`.
+  - Códigos: UPPER_SNAKE_CASE descritivos (`BAD_REQUEST`, `UNAUTHORIZED`, `METHOD_NOT_ALLOWED`, `FORBIDDEN`, `ADD_COURSE_FAILED`).
+  - Mapeie erros de negócio com `422`, inexistência com `404`, sem permissão com `401/403`, inválido/método com `400/405`, falhas inesperadas com `500`.
+  - Logue eventos críticos com `App\\Services\\Logger`.
+- Exemplos curl (autenticados):
+  - Login e jar de cookies:
+    - `curl -s -c cookies.txt -X POST -d "email=teste@teste.com&senha=123456" -L http://localhost:8080/login.php`
+  - GET autenticado:
+    - `curl -s -b cookies.txt http://localhost:8080/api/homepage-courses`
+  - POST autenticado com CSRF (JSON):
+    - `curl -s -b cookies.txt -H "Content-Type: application/json" -H "X-CSRF-Token: <CSRF_TOKEN>" -d "{\"course_id\":1}" http://localhost:8080/api/homepage-courses`
+  - Cookie manual (sem jar):
+    - `curl -s -H "Cookie: jwt=<JWT_COOKIE>; refresh=<REFRESH_COOKIE>" http://localhost:8080/api/homepage-courses`
+  - Obtendo `CSRF_TOKEN` (admin) a partir do `manage.php`:
+    - PowerShell: `powershell -Command "(Invoke-WebRequest http://localhost:8080/admin/manage.php -UseBasicParsing).Content -match 'name=\"csrf_token\" value=\"([^\"]+)' ; $matches[1]"`
