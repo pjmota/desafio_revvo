@@ -7,8 +7,8 @@
       "App\\": "app/"
     }
   },
-  "require": {},
   "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.89",
     "phpunit/phpunit": "^11.0"
   },
   "scripts": {
