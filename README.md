@@ -1,6 +1,6 @@
 # Documentação da Aplicação
 
-Este arquivo descreve funcionalidades, regras e uso da aplicação, sem incluir informações de desenvolvedor ou de identidade do projeto. Abaixo há um passo a passo detalhado para iniciar, criar e executar o sistema com segurança.
+Aplicação web em PHP (sem framework) que oferece autenticação via cookies JWT, área administrativa para gerenciar cursos, slides e usuários (CRUD), e uma página principal que exibe conteúdo dinâmico a partir de SQLite, com fallback quando não há dados. O projeto usa autoload PSR-4 (Composer), scripts de qualidade e testes com PHPUnit, além de um build simples de CSS/SCSS via Gulp.
 
 ## Pré-requisitos
 - PHP 8+ instalado
