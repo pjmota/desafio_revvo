@@ -27,3 +27,7 @@ data/jwt_secret.txt
 # Editor folders
 .vscode/
 .idea/
+vendor/
+.phpunit.result.cache
+composer.phar
+composer-setup.php

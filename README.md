@@ -18,6 +18,20 @@ Caso as extensões não estejam habilitadas, ajuste seu `php.ini` adicionando/ga
 Alternativa de execução sem editar php.ini (exemplo):
 - `php -S localhost:8000 -d extension=sqlite3 -d extension=pdo_sqlite router.php`
 
+## Resumo Rápido
+- Servidor: `php -S localhost:8080 router.php`
+- Dependências PHP: `composer install` (ou `php composer.phar install`) — `vendor/` está ignorado no Git
+- Testes: `vendor\\bin\\phpunit -c phpunit.xml` ou `php -d extension=mbstring vendor\\bin\\phpunit -c phpunit.xml`
+- Qualidade: `powershell -ExecutionPolicy Bypass -File .\\scripts\\quality.ps1 -BaseUrl http://localhost:8080`
+- Estilo (PSR-12): `vendor\\bin\\php-cs-fixer.bat fix app inc admin public router.php tests --dry-run --rules=@PSR12`
+
+## Setup Rápido
+- Instale dependências PHP: `composer install` (ou `php composer.phar install`)
+- Inicie o servidor: `php -S localhost:8080 router.php`
+- Acesse: `http://localhost:8080/login.php` (usuário seed: `teste@teste.com` / `123456`)
+- Se `pdo_sqlite`/`sqlite3` não estiverem ativos, use: `php -S localhost:8080 -d extension=sqlite3 -d extension=pdo_sqlite router.php`
+- Se `mbstring` não estiver habilitado no CLI, rode testes com: `php -d extension=mbstring vendor\\bin\\phpunit -c phpunit.xml`
+
 ## Passo a passo de inicialização e start
 1) Obtenha o código
 - Faça o download dos arquivos do projeto (ou clone o repositório) para uma pasta local.
@@ -173,6 +187,7 @@ Alternativa de execução sem editar php.ini (exemplo):
 - O arquivo do banco (`data/*.sqlite`) geralmente não deve ser versionado; o banco é recriado ao iniciar.
 - O segredo JWT é salvo em `data/jwt_secret.txt`. Para maior segurança, considere adicioná-lo ao `.gitignore` se ainda não estiver.
 - A pasta `assets/uploads/` pode conter arquivos gerados pelo uso da aplicação. Decide se devem ser versionados conforme a política do projeto.
+ - Dependências Composer em `vendor/` são ignoradas por padrão via `.gitignore`.
 
 ## Qualidade e Operação
 
@@ -218,6 +233,13 @@ Alternativa de execução sem editar php.ini (exemplo):
   - Uso: `powershell -ExecutionPolicy Bypass -File .\scripts\health.ps1 -BaseUrl http://localhost:8080`
 
 Dica: se usar outra porta, ajuste `-BaseUrl` nos scripts. Se rodar o servidor com `php -S localhost:8000 router.php`, use `http://localhost:8000`.
+
+## Comandos Úteis
+- Instalar dependências: `composer install` (ou `php composer.phar install`)
+- Rodar servidor: `php -S localhost:8080 router.php`
+- Testar sem habilitar globalmente `mbstring`: `php -d extension=mbstring vendor\\bin\\phpunit -c phpunit.xml`
+- Checar estilo: `vendor\\bin\\php-cs-fixer.bat fix app inc admin public router.php tests --dry-run --rules=@PSR12`
+- Corrigir estilo: `vendor\\bin\\php-cs-fixer.bat fix app inc admin public router.php tests --rules=@PSR12`
 
 ## Testes (Unitários)
 - Pré-requisitos:
