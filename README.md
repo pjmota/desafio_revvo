@@ -18,6 +18,16 @@ Caso as extensões não estejam habilitadas, ajuste seu `php.ini` adicionando/ga
 Alternativa de execução sem editar php.ini (exemplo):
 - `php -S localhost:8000 -d extension=sqlite3 -d extension=pdo_sqlite router.php`
 
+## Tecnologias Utilizadas
+- Backend: PHP (CLI/servidor embutido) com autoload PSR-4 (`composer.json`).
+- Banco de dados: SQLite via extensões `pdo_sqlite` e `sqlite3`.
+- Testes: PHPUnit (execução via `vendor/bin/phpunit`).
+- Estilo: PHP-CS-Fixer com padrão PSR-12.
+- Automação/Qualidade: scripts PowerShell (`scripts/health.ps1`, `scripts/quality.ps1`).
+- Frontend/Build: Node.js + Gulp 4, Sass/SCSS, Autoprefixer, Clean-CSS, Sourcemaps.
+- Ferramentas: Composer para dependências/execução de scripts.
+- Utilitários: `curl` para exemplos de autenticação e chamadas de API.
+
 ## Resumo Rápido
 - Servidor: `php -S localhost:8080 router.php`
 - Dependências PHP: `composer install` (ou `php composer.phar install`) — `vendor/` está ignorado no Git
